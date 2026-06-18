@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Juice Cost Calculator</title>
+
+<style>
+body{
+font-family:Arial,sans-serif;
+background:#f5f5f5;
+padding:15px;
+margin:0;
+}
+
+.card{
+background:white;
+padding:15px;
+border-radius:10px;
+margin-bottom:15px;
+box-shadow:0 2px 5px rgba(0,0,0,.15);
+}
+
+h1{
+text-align:center;
+}
+
+input,select{
+width:100%;
+padding:10px;
+margin-top:5px;
+margin-bottom:10px;
+font-size:16px;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+}
+
+th,td{
+border:1px solid #ccc;
+padding:8px;
+text-align:center;
+}
+
+.result{
+font-size:20px;
+font-weight:bold;
+color:green;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🥤 Juice Cost Calculator</h1>
+
+<div class="card">
+
+<label>Recipe</label>
+
+<select id="recipe">
+<option value="thandai">वैदिक ठंडाई</option>
+</select>
+
+<label>Base Glasses</label>
+<input type="number" id="baseGlass" value="10" readonly>
+
+<label>Target Glasses</label>
+<input type="number" id="targetGlass" value="10">
+
+<label>Selling Price Per Glass (₹)</label>
+<input type="number" id="sellPrice" value="30">
+
+</div>
+
+<div class="card">
+
+<h3>Required Ingredients</h3>
+
+<table>
+<thead>
+<tr>
+<th>Ingredient</th>
+<th>Qty</th>
+<th>Unit</th>
+<th>Price/Kg</th>
+<th>Cost</th>
+</tr>
+</thead>
+
+<tbody id="ingredientTable"></tbody>
+
+</table>
+
+</div>
+
+<div class="card">
+
+<div class="result">
+Total Cost: ₹ <span id="totalCost">0</span>
+</div>
+
+<br>
+
+<div class="result">
+Cost Per Glass: ₹ <span id="costPerGlass">0</span>
+</div>
+
+<br>
+
+<div class="result">
+Total Profit: ₹ <span id="totalProfit">0</span>
+</div>
+
+</div>
+
+<script>
+
+const ingredients = [
+
+{
+name:"बादाम",
+qty:50,
+unit:"gm",
+price:800
+},
+
+{
+name:"सौंफ",
+qty:20,
+unit:"gm",
+price:500
+},
+
+{
+name:"खसखस",
+qty:20,
+unit:"gm",
+price:2000
+},
+
+{
+name:"इलायची",
+qty:5,
+unit:"gm",
+price:4000
+},
+
+{
+name:"काली मिर्च",
+qty:5,
+unit:"gm",
+price:2000
+},
+
+{
+name:"गुलाब पंखुड़ी",
+qty:20,
+unit:"gm",
+price:400
+},
+
+{
+name:"शक्कर",
+qty:500,
+unit:"gm",
+price:100
+},
+
+{
+name:"दूध",
+qty:2000,
+unit:"ml",
+price:60
+}
+
+];
+
+function calculate(){
+
+let target =
+parseFloat(
+document.getElementById("targetGlass").value
+);
+
+let ratio = target / 10;
+
+let html = "";
+
+let totalCost = 0;
+
+ingredients.forEach(item=>{
+
+let scaledQty =
+item.qty * ratio;
+
+let cost = 0;
+
+if(item.unit==="gm"){
+cost =
+(scaledQty/1000) *
+item.price;
+}
+
+if(item.unit==="ml"){
+cost =
+(scaledQty/1000) *
+item.price;
+}
+
+totalCost += cost;
+
+html += `
+<tr>
+<td>${item.name}</td>
+<td>${scaledQty.toFixed(1)}</td>
+<td>${item.unit}</td>
+<td>₹${item.price}</td>
+<td>₹${cost.toFixed(2)}</td>
+</tr>
+`;
+
+});
+
+document.getElementById("ingredientTable").innerHTML = html;
+
+document.getElementById("totalCost")
+.innerText =
+totalCost.toFixed(2);
+
+let costPerGlass =
+totalCost / target;
+
+document.getElementById("costPerGlass")
+.innerText =
+costPerGlass.toFixed(2);
+
+let sellPrice =
+parseFloat(
+document.getElementById("sellPrice").value
+);
+
+let totalProfit =
+(sellPrice * target)
+-
+totalCost;
+
+document.getElementById("totalProfit")
+.innerText =
+totalProfit.toFixed(2);
+
+}
+
+document
+.getElementById("targetGlass")
+.addEventListener("input",calculate);
+
+document
+.getElementById("sellPrice")
+.addEventListener("input",calculate);
+
+calculate();
+
+</script>
+
+</body>
+</html>
