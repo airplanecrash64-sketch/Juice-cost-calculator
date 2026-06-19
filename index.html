@@ -3,263 +3,357 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Juice Cost Calculator</title>
+<title>Juice Cost Calculator Pro</title>
 
 <style>
+
 body{
-font-family:Arial,sans-serif;
-background:#f5f5f5;
-padding:15px;
 margin:0;
+padding:10px;
+font-family:Arial;
+background:#f1f1f1;
+}
+
+.container{
+max-width:500px;
+margin:auto;
 }
 
 .card{
 background:white;
-padding:15px;
-border-radius:10px;
-margin-bottom:15px;
-box-shadow:0 2px 5px rgba(0,0,0,.15);
+padding:12px;
+border-radius:12px;
+margin-bottom:10px;
+box-shadow:0 2px 5px rgba(0,0,0,0.1);
 }
 
 h1{
 text-align:center;
+font-size:24px;
+margin-bottom:10px;
 }
 
-input,select{
+select,input{
 width:100%;
 padding:10px;
 margin-top:5px;
 margin-bottom:10px;
 font-size:16px;
-}
-
-table{
-width:100%;
-border-collapse:collapse;
-}
-
-th,td{
+border-radius:8px;
 border:1px solid #ccc;
-padding:8px;
-text-align:center;
+box-sizing:border-box;
+}
+
+button{
+width:100%;
+padding:12px;
+background:#008cff;
+color:white;
+border:none;
+border-radius:10px;
+font-size:16px;
+margin-top:5px;
+}
+
+button:active{
+transform:scale(0.98);
+}
+
+.ingredientRow{
+display:grid;
+grid-template-columns:1fr 80px 80px 60px;
+gap:5px;
+margin-bottom:5px;
 }
 
 .result{
-font-size:20px;
+font-size:18px;
 font-weight:bold;
+margin-top:8px;
 color:green;
 }
+
+.small{
+font-size:13px;
+color:#666;
+}
+
 </style>
 </head>
 
 <body>
 
-<h1>🥤 Juice Cost Calculator</h1>
+<div class="container">
+
+<h1>🥤 Juice Cost Calculator Pro</h1>
 
 <div class="card">
 
-<label>Recipe</label>
+<label>Recipe Name</label>
+<select id="recipeList"></select>
 
-<select id="recipe">
-<option value="thandai">वैदिक ठंडाई</option>
-</select>
+<input type="text" id="recipeName" placeholder="नई recipe का नाम">
 
-<label>Base Glasses</label>
-<input type="number" id="baseGlass" value="10" readonly>
-
-<label>Target Glasses</label>
-<input type="number" id="targetGlass" value="10">
-
-<label>Selling Price Per Glass (₹)</label>
-<input type="number" id="sellPrice" value="30">
+<button onclick="saveRecipe()">💾 Save Recipe</button>
 
 </div>
 
 <div class="card">
 
-<h3>Required Ingredients</h3>
+<label>Base Glass</label>
 
-<table>
-<thead>
-<tr>
-<th>Ingredient</th>
-<th>Qty</th>
-<th>Unit</th>
-<th>Price/Kg</th>
-<th>Cost</th>
-</tr>
-</thead>
+<select id="baseGlass" onchange="tick();calculate()"></select>
 
-<tbody id="ingredientTable"></tbody>
+<label>Target Glass</label>
 
-</table>
+<select id="targetGlass" onchange="tick();calculate()"></select>
+
+<label>Selling Price Per Glass ₹</label>
+
+<select id="sellPrice" onchange="tick();calculate()"></select>
 
 </div>
 
 <div class="card">
 
-<div class="result">
-Total Cost: ₹ <span id="totalCost">0</span>
+<h3>Ingredients</h3>
+
+<div id="ingredients"></div>
+
+<button onclick="addIngredient()">➕ Add Ingredient</button>
+
 </div>
 
-<br>
+<div class="card">
 
-<div class="result">
-Cost Per Glass: ₹ <span id="costPerGlass">0</span>
-</div>
+<div class="result" id="totalCost">Total Cost: ₹0</div>
 
-<br>
+<div class="result" id="costPerGlass">Cost Per Glass: ₹0</div>
 
-<div class="result">
-Total Profit: ₹ <span id="totalProfit">0</span>
+<div class="result" id="profit">Profit: ₹0</div>
+
 </div>
 
 </div>
 
 <script>
 
-const ingredients = [
+const ingredientBox = document.getElementById("ingredients");
 
-{
-name:"बादाम",
-qty:50,
-unit:"gm",
-price:800
-},
+function fillSelect(id,max){
+let select=document.getElementById(id);
 
-{
-name:"सौंफ",
-qty:20,
-unit:"gm",
-price:500
-},
+for(let i=1;i<=max;i++){
 
-{
-name:"खसखस",
-qty:20,
-unit:"gm",
-price:2000
-},
+let option=document.createElement("option");
+option.value=i;
+option.text=i;
+select.appendChild(option);
 
-{
-name:"इलायची",
-qty:5,
-unit:"gm",
-price:4000
-},
-
-{
-name:"काली मिर्च",
-qty:5,
-unit:"gm",
-price:2000
-},
-
-{
-name:"गुलाब पंखुड़ी",
-qty:20,
-unit:"gm",
-price:400
-},
-
-{
-name:"शक्कर",
-qty:500,
-unit:"gm",
-price:100
-},
-
-{
-name:"दूध",
-qty:2000,
-unit:"ml",
-price:60
+}
 }
 
-];
+fillSelect("baseGlass",200);
+fillSelect("targetGlass",500);
+fillSelect("sellPrice",500);
+
+document.getElementById("baseGlass").value=1;
+document.getElementById("targetGlass").value=1;
+document.getElementById("sellPrice").value=30;
+
+function tick(){
+
+navigator.vibrate(20);
+
+let audio = new Audio("https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg");
+audio.play();
+
+}
+
+function addIngredient(name="",qty=1,price=100){
+
+let row=document.createElement("div");
+row.className="ingredientRow";
+
+row.innerHTML=`
+
+<input placeholder="Ingredient" value="${name}" class="name">
+
+<select class="qty"></select>
+
+<select class="price"></select>
+
+<button onclick="removeIngredient(this)">❌</button>
+
+`;
+
+ingredientBox.appendChild(row);
+
+let qtySelect=row.querySelector(".qty");
+let priceSelect=row.querySelector(".price");
+
+for(let i=1;i<=5000;i++){
+
+let op1=document.createElement("option");
+op1.value=i;
+op1.text=i+"g";
+qtySelect.appendChild(op1);
+
+let op2=document.createElement("option");
+op2.value=i;
+op2.text="₹"+i;
+priceSelect.appendChild(op2);
+
+}
+
+qtySelect.value=qty;
+priceSelect.value=price;
+
+qtySelect.onchange=()=>{tick();calculate();}
+priceSelect.onchange=()=>{tick();calculate();}
+
+calculate();
+
+}
+
+function removeIngredient(btn){
+
+btn.parentElement.remove();
+calculate();
+
+}
 
 function calculate(){
 
-let target =
-parseFloat(
-document.getElementById("targetGlass").value
-);
+let baseGlass=Number(document.getElementById("baseGlass").value);
 
-let ratio = target / 10;
+let targetGlass=Number(document.getElementById("targetGlass").value);
 
-let html = "";
+let sellPrice=Number(document.getElementById("sellPrice").value);
 
-let totalCost = 0;
+let rows=document.querySelectorAll(".ingredientRow");
 
-ingredients.forEach(item=>{
+let total=0;
 
-let scaledQty =
-item.qty * ratio;
+rows.forEach(row=>{
 
-let cost = 0;
+let qty=Number(row.querySelector(".qty").value);
 
-if(item.unit==="gm"){
-cost =
-(scaledQty/1000) *
-item.price;
-}
+let price=Number(row.querySelector(".price").value);
 
-if(item.unit==="ml"){
-cost =
-(scaledQty/1000) *
-item.price;
-}
+let cost=(qty/1000)*price;
 
-totalCost += cost;
-
-html += `
-<tr>
-<td>${item.name}</td>
-<td>${scaledQty.toFixed(1)}</td>
-<td>${item.unit}</td>
-<td>₹${item.price}</td>
-<td>₹${cost.toFixed(2)}</td>
-</tr>
-`;
+total+=cost;
 
 });
 
-document.getElementById("ingredientTable").innerHTML = html;
+let finalCost=(total/baseGlass)*targetGlass;
 
-document.getElementById("totalCost")
-.innerText =
-totalCost.toFixed(2);
+let perGlass=finalCost/targetGlass;
 
-let costPerGlass =
-totalCost / target;
+let totalSell=sellPrice*targetGlass;
 
-document.getElementById("costPerGlass")
-.innerText =
-costPerGlass.toFixed(2);
+let profit=totalSell-finalCost;
 
-let sellPrice =
-parseFloat(
-document.getElementById("sellPrice").value
-);
+document.getElementById("totalCost").innerHTML=
+"Total Cost: ₹"+finalCost.toFixed(2);
 
-let totalProfit =
-(sellPrice * target)
--
-totalCost;
+document.getElementById("costPerGlass").innerHTML=
+"Cost Per Glass: ₹"+perGlass.toFixed(2);
 
-document.getElementById("totalProfit")
-.innerText =
-totalProfit.toFixed(2);
+document.getElementById("profit").innerHTML=
+"Profit: ₹"+profit.toFixed(2);
 
 }
 
-document
-.getElementById("targetGlass")
-.addEventListener("input",calculate);
+function saveRecipe(){
 
-document
-.getElementById("sellPrice")
-.addEventListener("input",calculate);
+let recipeName=document.getElementById("recipeName").value;
+
+if(recipeName==""){
+alert("Recipe name डालो");
+return;
+}
+
+let rows=document.querySelectorAll(".ingredientRow");
+
+let ingredients=[];
+
+rows.forEach(row=>{
+
+ingredients.push({
+
+name:row.querySelector(".name").value,
+qty:row.querySelector(".qty").value,
+price:row.querySelector(".price").value
+
+});
+
+});
+
+let data={
+
+baseGlass:document.getElementById("baseGlass").value,
+targetGlass:document.getElementById("targetGlass").value,
+sellPrice:document.getElementById("sellPrice").value,
+ingredients:ingredients
+
+};
+
+localStorage.setItem(recipeName,JSON.stringify(data));
+
+loadRecipes();
+
+alert("Recipe Saved");
+
+}
+
+function loadRecipes(){
+
+let recipeList=document.getElementById("recipeList");
+
+recipeList.innerHTML="";
+
+for(let i=0;i<localStorage.length;i++){
+
+let key=localStorage.key(i);
+
+let option=document.createElement("option");
+
+option.value=key;
+option.text=key;
+
+recipeList.appendChild(option);
+
+}
+
+}
+
+document.getElementById("recipeList").onchange=function(){
+
+let data=JSON.parse(localStorage.getItem(this.value));
+
+document.getElementById("baseGlass").value=data.baseGlass;
+document.getElementById("targetGlass").value=data.targetGlass;
+document.getElementById("sellPrice").value=data.sellPrice;
+
+ingredientBox.innerHTML="";
+
+data.ingredients.forEach(item=>{
+
+addIngredient(item.name,item.qty,item.price);
+
+});
+
+calculate();
+
+};
+
+addIngredient("बादाम",5,800);
+addIngredient("सौंफ",2,500);
+addIngredient("इलायची",1,4000);
+
+loadRecipes();
 
 calculate();
 
